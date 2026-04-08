@@ -24,7 +24,7 @@ import { useAuthViewModel } from '../viewmodels/useAuthViewModel';
 
 export default function RegisterView() {
   const router = useRouter();
-  const { register, loading } = useAuthViewModel();
+  const { register, loading, offlineMode } = useAuthViewModel();
 
   const [nombre, setNombre] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -70,9 +70,15 @@ export default function RegisterView() {
     });
 
     if (result.success) {
-      Alert.alert('Éxito', 'Cuenta creada correctamente', [
-        { text: 'Aceptar', onPress: () => router.replace('/login') },
-      ]);
+      if (result.message?.includes('offline')) {
+        Alert.alert('Registro guardado', result.message, [
+          { text: 'Aceptar', onPress: () => router.replace('/login') },
+        ]);
+      } else {
+        Alert.alert('Éxito', 'Cuenta creada correctamente', [
+          { text: 'Aceptar', onPress: () => router.replace('/login') },
+        ]);
+      }
     } else {
       Alert.alert('Error', result.message || 'Error al registrar');
     }
@@ -212,6 +218,14 @@ export default function RegisterView() {
               <Text style={styles.errorText}>Las contraseñas no coinciden</Text>
             ) : null}
 
+            {/* Indicador de modo offline */}
+            {offlineMode && (
+              <View style={styles.offlineBadge}>
+                <Ionicons name="cloud-offline-outline" size={16} color="#f97316" />
+                <Text style={styles.offlineText}>Modo offline - Se sincronizará después</Text>
+              </View>
+            )}
+
             {/* Botón REGISTER */}
             <TouchableOpacity
               style={[styles.registerBtn, loading && { opacity: 0.7 }]}
@@ -249,8 +263,6 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
   },
-
-  // Top section
   topSection: {
     height: 240,
     backgroundColor: '#2a1a5e',
@@ -294,8 +306,6 @@ const styles = StyleSheet.create({
     letterSpacing: 5,
     marginTop: 2,
   },
-
-  // Form
   formPanel: {
     backgroundColor: '#5b3fd4',
     borderTopLeftRadius: 32,
@@ -348,6 +358,22 @@ const styles = StyleSheet.create({
     marginTop: -10,
     marginBottom: 10,
     marginLeft: 2,
+  },
+  offlineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  offlineText: {
+    color: '#f97316',
+    fontSize: 12,
+    fontWeight: '500',
   },
   registerBtn: {
     backgroundColor: '#f97316',
